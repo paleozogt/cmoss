@@ -100,6 +100,17 @@ if [ "${IS_SDK_7}" ]
 then
     #TODO support simulator in SDK 7.0
     PLATFORMS="iPhoneOS-V7"
+    # Correct for some path discrepancies in the iphone 7.0 SDK layout. We could simply build with the new location of GCC/etc, but
+    # boost uses the GCC location to infer the location of the platform folder. Instead of modifying boost, we simply symlink gcc to
+    # its old place under Platforms/
+    platform_bin=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/
+    developer_bin=/Applications/Xcode.app/Contents/Developer/usr/bin/
+    if [ ! -e ${platform_bin}/gcc ]
+    then
+        ln -s $developer_bin/gcc $platform_bin/gcc
+        ln -s $developer_bin/ld $platform_bin/ld
+        ln -s $developer_bin/g++ $platform_bin/g++
+    fi
 fi
 
 # Build projects
@@ -160,7 +171,7 @@ do
 
         # TODO - simulator isn't working yet for ios7, but this is one thing
         # that must be fixed
-        if [ "${PLATFORM}" == "iPhoneSimulator" && "${IS_SDK_7}" ]
+        if [ "${PLATFORM}" == "iPhoneSimulator" ] && [ -n "${IS_SDK_7}" ]
         then
             export AR="/usr/bin/ar"
             export RANLIB="/usr/bin/ranlib"
@@ -168,8 +179,6 @@ do
             export AR="${BUILD_DEVROOT}/usr/bin/ar"
             export RANLIB="${BUILD_DEVROOT}/usr/bin/ranlib"
         fi
-
-        echo AR $AR
 
 	# Build minizip
 	${TOPDIR}/build-ios/build-minizip.sh > "${LOGPATH}-minizip.log"
