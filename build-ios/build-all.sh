@@ -95,6 +95,13 @@ PLATFORMS="iPhoneSimulator iPhoneOS-V6 iPhoneOS-V7"
 DEVELOPER=`xcode-select --print-path`
 export DEVELOPER="${DEVELOPER}"
 
+IS_SDK_7=`echo "${SDK} >= 7.0" | bc` 
+if [ "${IS_SDK_7}" ]
+then
+    #TODO support simulator in SDK 7.0
+    PLATFORMS="iPhoneOS-V7"
+fi
+
 # Build projects
 for PLATFORM in ${PLATFORMS}
 do
@@ -111,7 +118,6 @@ do
 	LOGPATH="${LOGDIR}/${PLATFORM}"
 	ROOTDIR="${TMPDIR}/build/ios/${PLATFORM}"
 	CSDK=${SDK}
-
 	if [ "${PLATFORM}" == "iPhoneOS-V7" ]
 	then
 		PLATFORM="iPhoneOS"
@@ -139,7 +145,7 @@ do
 	if [ ! -d ${BUILD_SDKROOT} ]
 	then
 		rm -fr ${ROOTDIR}
-		echo "WARNING! Unable to locate SDK for architecture ${ARCH}: ${BUILD_SDKROOT}"
+		echo "WARNING! Unable to locate SDK for /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/ararchitecture ${ARCH}: ${BUILD_SDKROOT}"
 		continue
 	fi
 
@@ -148,11 +154,22 @@ do
 	export CC="${BUILD_DEVROOT}/usr/bin/gcc"
 	export LD="${BUILD_DEVROOT}/usr/bin/ld"
 	export CXX="${BUILD_DEVROOT}/usr/bin/g++"
-	export AR="${BUILD_DEVROOT}/usr/bin/ar"
 	export AS="${BUILD_DEVROOT}/usr/bin/as"
 	export NM="${BUILD_DEVROOT}/usr/bin/nm"
 	export STRIP="${BUILD_DEVROOT}/usr/bin/strip"
-	export RANLIB="${BUILD_DEVROOT}/usr/bin/ranlib"
+
+        # TODO - simulator isn't working yet for ios7, but this is one thing
+        # that must be fixed
+        if [ "${PLATFORM}" == "iPhoneSimulator" && "${IS_SDK_7}" ]
+        then
+            export AR="/usr/bin/ar"
+            export RANLIB="/usr/bin/ranlib"
+        else
+            export AR="${BUILD_DEVROOT}/usr/bin/ar"
+            export RANLIB="${BUILD_DEVROOT}/usr/bin/ranlib"
+        fi
+
+        echo AR $AR
 
 	# Build minizip
 	${TOPDIR}/build-ios/build-minizip.sh > "${LOGPATH}-minizip.log"
@@ -206,10 +223,10 @@ do
 	${TOPDIR}/build-ios/build-sqlcipher.sh > "${LOGPATH}-sqlcipher.log"
 
 	# Build SOCI
-	${TOPDIR}/build-ios/build-soci.sh > "${LOGPATH}-soci.log"
+	#${TOPDIR}/build-ios/build-soci.sh > "${LOGPATH}-soci.log"
 
 	# Build PION
-	${TOPDIR}/build-ios/build-pion.sh > "${LOGPATH}-pion.log"
+	#${TOPDIR}/build-ios/build-pion.sh > "${LOGPATH}-pion.log"
 
 	# Remove junk
 	rm -rf "${ROOTDIR}/bin"
@@ -267,18 +284,21 @@ for a in $(cat $BINDIR/libs | sort | uniq); do
 	done
 
 	echo Creating fat archive $BINDIR/lib/$a...
-	if [[ "${PLATFORMS}" == *iPhoneOS-V6* ]]
-	then
-		$BUILD_DEVROOT/usr/bin/lipo -output "$BINDIR/lib/$a" -create \
-			-arch armv6 "$TMPDIR/build/ios/iPhoneOS-V6/lib/$a" \
-			-arch armv7 "$TMPDIR/build/ios/iPhoneOS-V7/lib/$a" \
-			-arch i386 "$TMPDIR/build/ios/iPhoneSimulator/lib/$a"
-	else
-		$BUILD_DEVROOT/usr/bin/lipo -output "$BINDIR/lib/$a" -create \
-			-arch armv7 "$TMPDIR/build/ios/iPhoneOS-V7/lib/$a" \
-			-arch i386 "$TMPDIR/build/ios/iPhoneSimulator/lib/$a"
-	fi
-
+        lipo_cmd="$BUILD_DEVROOT/usr/bin/lipo -output $BINDIR/lib/$a -create "
+        if [[ "${PLATFORMS}" == *iPhoneOS-V6* ]]
+        then
+            lipo_cmd="${lipo_cmd} -arch armv6 $TMPDIR/build/ios/iPhoneOS-V6/lib/$a"
+        fi
+        if [[ "${PLATFORMS}" == *iPhoneOS-V7* ]]
+        then
+            lipo_cmd="${lipo_cmd} -arch armv7 $TMPDIR/build/ios/iPhoneOS-V7/lib/$a"
+        fi
+        if [[ "${PLATFORMS}" == *iPhoneSimulator* ]]
+        then
+            lipo_cmd="${lipo_cmd} -arch i386 $TMPDIR/build/ios/iPhoneSimulator/lib/$a"
+        fi
+        echo $lipo_cmd
+        $lipo_cmd
 done
 rm -f $BINDIR/libs
 
@@ -294,9 +314,8 @@ do
 	fi
 	echo ...$PLATFORM
 	(cd $TMPDIR/build/ios/${PLATFORM}/obj; $AR crus $TMPDIR/build/ios/${PLATFORM}/lib/${FRAMEWORK_NAME}.a *.o; )
+        cp -r "$TMPDIR/build/ios/${PLATFORM}/include" "$BINDIR"
 done
-
-cp -r "$TMPDIR/build/ios/iPhoneSimulator/include" "$BINDIR"
 
 rm -rf $FRAMEWORK_BUNDLE
 
@@ -318,21 +337,23 @@ ln -s Versions/Current/$FRAMEWORK_NAME $FRAMEWORK_BUNDLE/$FRAMEWORK_NAME
 FRAMEWORK_INSTALL_NAME=$FRAMEWORK_BUNDLE/Versions/$FRAMEWORK_VERSION/$FRAMEWORK_NAME
 
 echo "Lipoing library into $FRAMEWORK_INSTALL_NAME..."
+lipo_cmd="$BUILD_DEVROOT/usr/bin/lipo -create "
 if [[ "${PLATFORMS}" == *iPhoneOS-V6* ]]
 then
-    lipo \
-        -create \
-        -arch armv6 "$TMPDIR/build/ios/iPhoneOS-V6/lib/${FRAMEWORK_NAME}.a" \
-        -arch armv7 "$TMPDIR/build/ios/iPhoneOS-V7/lib/${FRAMEWORK_NAME}.a" \
-        -arch i386  "$TMPDIR/build/ios/iPhoneSimulator/lib/${FRAMEWORK_NAME}.a" \
-        -output     "$FRAMEWORK_INSTALL_NAME"
-else
-    lipo \
-        -create \
-        -arch armv7 "$TMPDIR/build/ios/iPhoneOS-V7/lib/${FRAMEWORK_NAME}.a" \
-        -arch i386  "$TMPDIR/build/ios/iPhoneSimulator/lib/${FRAMEWORK_NAME}.a" \
-        -output     "$FRAMEWORK_INSTALL_NAME"
+    lipo_cmd="$lipo_cmd -arch armv6 $TMPDIR/build/ios/iPhoneOS-V6/lib/${FRAMEWORK_NAME}.a"
 fi
+if [[ "${PLATFORMS}" == *iPhoneOS-V7* ]]
+then
+    lipo_cmd="${lipo_cmd} -arch armv7 $TMPDIR/build/ios/iPhoneOS-V7/lib/${FRAMEWORK_NAME}.a"
+fi
+if [[ "${PLATFORMS}" == *iPhoneSimulator* ]]
+then
+    lipo_cmd="${lipo_cmd} -arch i386 $TMPDIR/build/ios/iPhoneSimulator/lib/${FRAMEWORK_NAME}.a"
+fi
+lipo_cmd="${lipo_cmd} -output ${FRAMEWORK_INSTALL_NAME}"
+echo $lipo_cmd
+$lipo_cmd
+
 
 echo "Framework: Copying includes..."
 cp -r "$BINDIR/include/" "$FRAMEWORK_BUNDLE/Headers/"

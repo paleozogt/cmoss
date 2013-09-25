@@ -146,7 +146,7 @@ writeBjamUserConfig()
 
     cat >> tools/build/v2/user-config.jam <<EOF
 using darwin : ${SDK}~${BOOST_PLAT}
-   : ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/usr/bin/gcc -arch $ARCH -mthumb -fvisibility=hidden -fvisibility-inlines-hidden $EXTRA_CPPFLAGS
+   : ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/usr/bin/gcc -arch $ARCH -mthumb -fvisibility=hidden -fvisibility-inlines-hidden $EXTRA_CPPFLAGS -stdlib=libstdc++
    : 
    : <architecture>$BOOST_ARCH <target-os>iphone
    ;

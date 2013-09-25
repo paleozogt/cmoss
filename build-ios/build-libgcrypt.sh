@@ -26,18 +26,21 @@ set -e
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+echo "DOWNLOADING"
 # Download source
 if [ ! -e "libgcrypt-${LIBGCRYPT_VERSION}.tar.bz2" ]
 then
   curl $PROXY -O "ftp://ftp.gnupg.org/gcrypt/libgcrypt/libgcrypt-${LIBGCRYPT_VERSION}.tar.bz2"
 fi
 
+echo "EXTRACTING"
 # Extract source
 rm -rf "libgcrypt-${LIBGCRYPT_VERSION}"
 tar zxvf "libgcrypt-${LIBGCRYPT_VERSION}.tar.bz2"
 pushd "libgcrypt-${LIBGCRYPT_VERSION}"
 tar xvf "${TOPDIR}/build-ios/ios-libgcrypt-patch.tar.gz"
 
+echo "FINDING PATCHES"
 # Apply patches to libgcrypt
 PATCHES_DIR=${TMPDIR}/libgcrypt-${LIBGCRYPT_VERSION}/ios-libgcrypt-patch
 if [ ! -d "$PATCHES_DIR" ] ; then
@@ -45,6 +48,7 @@ if [ ! -d "$PATCHES_DIR" ] ; then
 	exit 1
 fi
 
+echo "PATCHING"
 PATCHES=`(cd $PATCHES_DIR && find . -name "*.patch" | sort) 2> /dev/null`
 if [ -z "$PATCHES" ] ; then
 	echo "No patches files in $PATCHES_DIR"
@@ -65,11 +69,13 @@ fi
 
 # Build
 export LDFLAGS="-Os -arch ${ARCH} -Wl,-dead_strip -miphoneos-version-min=2.2 -L${ROOTDIR}/lib"
-export CFLAGS="-Os -arch ${ARCH} -pipe -no-cpp-precomp -isysroot ${BUILD_SDKROOT} -miphoneos-version-min=2.2 -I${ROOTDIR}/include"
+export CFLAGS="-Os -arch ${ARCH} -pipe -no-cpp-precomp -isysroot ${BUILD_SDKROOT} -miphoneos-version-min=2.2 -I${ROOTDIR}/include -fheinous-gnu-extensions"
 export CPPFLAGS="${CFLAGS}"
 export CXXFLAGS="${CFLAGS}"
 
-./configure --host=${ARCH}-apple-darwin --prefix=${ROOTDIR} --disable-shared --enable-static --with-gpg-error-prefix=${ROOTDIR}
+echo "CONFIGURING"
+./configure --host=${ARCH}-apple-darwin --prefix=${ROOTDIR} --disable-shared --enable-static --with-gpg-error-prefix=${ROOTDIR} 
+echo "BUILDING"
 make
 make install
 popd
