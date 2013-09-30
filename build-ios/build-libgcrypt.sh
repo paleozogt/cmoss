@@ -68,13 +68,16 @@ else
 fi
 
 # Build
-export LDFLAGS="-Os -arch ${ARCH} -Wl,-dead_strip -miphoneos-version-min=2.2 -L${ROOTDIR}/lib"
-export CFLAGS="-Os -arch ${ARCH} -pipe -no-cpp-precomp -isysroot ${BUILD_SDKROOT} -miphoneos-version-min=2.2 -I${ROOTDIR}/include -fheinous-gnu-extensions"
+export LDFLAGS="-Os -arch ${ARCH} -Wl,-dead_strip -miphoneos-version-min=${MIPHONEOS_VERSION_MIN} -L${ROOTDIR}/lib"
+export CFLAGS="-Os -arch ${ARCH} -pipe -no-cpp-precomp -isysroot ${BUILD_SDKROOT} -miphoneos-version-min=${MIPHONEOS_VERSION_MIN} -I${ROOTDIR}/include -fheinous-gnu-extensions"
 export CPPFLAGS="${CFLAGS}"
 export CXXFLAGS="${CFLAGS}"
 
+echo $LDFLAGS
+echo $CFLAGS
+
 echo "CONFIGURING"
-./configure --host=${ARCH}-apple-darwin --prefix=${ROOTDIR} --disable-shared --enable-static --with-gpg-error-prefix=${ROOTDIR} 
+./configure --host=${ARCH}-apple-darwin --prefix=${ROOTDIR} --disable-shared --enable-static --with-gpg-error-prefix=${ROOTDIR} --disable-aesni-support --disable-asm
 echo "BUILDING"
 make
 make install

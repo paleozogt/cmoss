@@ -36,7 +36,7 @@ export LIBIDN_VERSION="1.26"
 
 # GNU Crypto libraries
 export LIBGPG_ERROR_VERSION="1.10"
-export LIBGCRYPT_VERSION="1.5.0"
+export LIBGCRYPT_VERSION="1.5.3"
 export GNUPG_VERSION="1.4.13"
 
 # Project versions to use to build openssl (changing this may break the build)
@@ -89,20 +89,20 @@ mkdir -p ${TMPDIR}
 pushd ${TMPDIR}
 
 # Platforms to build for (changing this may break the build)
-PLATFORMS="iPhoneSimulator iPhoneOS-V6 iPhoneOS-V7"
+PLATFORMS="iPhoneSimulator"  # iPhoneOS-V6 iPhoneOS-V7"
 
 # Location of SDK
 DEVELOPER=`xcode-select --print-path`
 export DEVELOPER="${DEVELOPER}"
 
+export MIPHONEOS_VERSION_MIN="2.2"
 IS_SDK_7=`echo "${SDK} >= 7.0" | bc` 
 if [ "${IS_SDK_7}" ]
 then
-    #TODO support simulator in SDK 7.0
-    PLATFORMS="iPhoneOS-V7"
+    PLATFORMS="iPhoneOS-V7 iPhoneSimulator" # TODO 
     # Correct for some path discrepancies in the iphone 7.0 SDK layout. We could simply build with the new location of GCC/etc, but
     # boost uses the GCC location to infer the location of the platform folder. Instead of modifying boost, we simply symlink gcc to
-    # its old place under Platforms/
+    # its old place undeoh yeah, warwick is pretty top of the liner Platforms/
     platform_bin=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/
     developer_bin=/Applications/Xcode.app/Contents/Developer/usr/bin/
     if [ ! -e ${platform_bin}/gcc ]
@@ -123,6 +123,10 @@ done
 
 for PLATFORM in ${PLATFORMS}
 do
+        if [ "${IS_SDK_7}" ] && [ "${PLATFORM}" == "iPhoneSimulator" ]
+        then
+            export MIPHONEOS_VERSION_MIN="6.0"
+        fi
 	p=${PLATFORM}
 	echo "Building libraries for ${p}..."
 
@@ -201,7 +205,7 @@ do
 	# Build libgcrypt
 	${TOPDIR}/build-ios/build-libgcrypt.sh > "${LOGPATH}-libgcrypt.log"
 
-	# Build GnuPG
+	# Build  -miphoneos-version-min=${MIPHONEOS_VERSION_MIN} GnuPG
 	${TOPDIR}/build-ios/build-GnuPG.sh > "${LOGPATH}-GnuPG.log"
 
 	# Build OpenSSL
@@ -283,12 +287,6 @@ for a in $(cat $BINDIR/libs | sort | uniq); do
 	echo Decomposing $a...
 	for PLATFORM in ${PLATFORMS}
 	do
-		if [ "${PLATFORM}" == "iPhoneSimulator" ]
-		then
-			AR="${DEVELOPER}/Platforms/iPhoneSimulator.platform/Developer/usr/bin/ar"
-		else
-			AR="${DEVELOPER}/Platforms/iPhoneOS.platform/Developer/usr/bin/ar"
-		fi
 		(cd $TMPDIR/build/ios/${PLATFORM}/obj; $AR -x $TMPDIR/build/ios/${PLATFORM}/lib/$a );
 	done
 
@@ -315,12 +313,6 @@ echo "Linking each architecture into an archive ${FRAMEWORK_NAME}.a for each pla
 
 for PLATFORM in ${PLATFORMS}
 do
-	if [ "${PLATFORM}" == "iPhoneSimulator" ]
-	then
-		AR="${DEVELOPER}/Platforms/iPhoneSimulator.platform/Developer/usr/bin/ar"
-	else
-		AR="${DEVELOPER}/Platforms/iPhoneOS.platform/Developer/usr/bin/ar"
-	fi
 	echo ...$PLATFORM
 	(cd $TMPDIR/build/ios/${PLATFORM}/obj; $AR crus $TMPDIR/build/ios/${PLATFORM}/lib/${FRAMEWORK_NAME}.a *.o; )
         cp -r "$TMPDIR/build/ios/${PLATFORM}/include" "$BINDIR"

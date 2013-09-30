@@ -38,8 +38,8 @@ rm -rf "libgsasl-${LIBGSASL_VERSION}"
 tar xvf "libgsasl-${LIBGSASL_VERSION}.tar.gz"
 
 # Build
-export LDFLAGS="-Os -arch ${ARCH} -Wl,-dead_strip -miphoneos-version-min=2.2 -L${ROOTDIR}/lib"
-export CFLAGS="-Os -arch ${ARCH} -pipe -no-cpp-precomp -isysroot ${BUILD_SDKROOT} -miphoneos-version-min=2.2 -I${ROOTDIR}/include"
+export LDFLAGS="-Os -arch ${ARCH} -Wl,-dead_strip -miphoneos-version-min=${MIPHONEOS_VERSION_MIN} -L${ROOTDIR}/lib"
+export CFLAGS="-Os -arch ${ARCH} -pipe -no-cpp-precomp -isysroot ${BUILD_SDKROOT} -miphoneos-version-min=${MIPHONEOS_VERSION_MIN} -I${ROOTDIR}/include"
 export CPPFLAGS="${CFLAGS}"
 export CXXFLAGS="${CFLAGS}"
 

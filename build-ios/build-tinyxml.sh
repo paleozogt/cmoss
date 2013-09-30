@@ -41,8 +41,8 @@ cp ${TOPDIR}/build-ios/Makefile.tinyxml tinyxml/Makefile
 # Build
 pushd "tinyxml"
 BIGFILES=-D_FILE_OFFSET_BITS=64
-export LDFLAGS="-Os -arch ${ARCH} -Wl,-dead_strip -Wno-unknown-pragmas -Wno-format -miphoneos-version-min=2.2 -L${ROOTDIR}/lib"
-export CFLAGS="-Os -arch ${ARCH} -pipe -no-cpp-precomp -isysroot ${BUILD_SDKROOT} -miphoneos-version-min=2.2 -I${ROOTDIR}/include -g ${BIGFILES}"
+export LDFLAGS="-Os -arch ${ARCH} -Wl,-dead_strip -Wno-unknown-pragmas -Wno-format -miphoneos-version-min=${MIPHONEOS_VERSION_MIN} -L${ROOTDIR}/lib"
+export CFLAGS="-Os -arch ${ARCH} -pipe -no-cpp-precomp -isysroot ${BUILD_SDKROOT} -miphoneos-version-min=${MIPHONEOS_VERSION_MIN} -I${ROOTDIR}/include -g ${BIGFILES}"
 export CPPFLAGS="${CFLAGS}"
 export CXXFLAGS="${CFLAGS}"
 

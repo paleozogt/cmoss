@@ -38,12 +38,12 @@ tar zxvf "openssl-${OPENSSL_VERSION}.tar.gz"
 pushd "openssl-${OPENSSL_VERSION}"
 
 # Build
-export LDFLAGS="-Os -arch ${ARCH} -Wl,-dead_strip -miphoneos-version-min=2.2 -dynamiclib"
-export CFLAGS="-Os -D_DARWIN_C_SOURCE -UOPENSSL_BN_ASM_PART_WORDS -arch ${ARCH} -isysroot ${BUILD_SDKROOT}"
+export LDFLAGS="-Os -arch ${ARCH} -Wl,-dead_strip -miphoneos-version-min=${MIPHONEOS_VERSION_MIN} -dynamiclib -isysroot ${BUILD_SDKROOT}"
+export CFLAGS="-Os -D_DARWIN_C_SOURCE -UOPENSSL_BN_ASM_PART_WORDS -arch ${ARCH} -isysroot ${BUILD_SDKROOT} -miphoneos-version-min=${MIPHONEOS_VERSION_MIN}"
 
 ./config no-shared no-asm no-krb5 no-gost zlib --openssldir=${ROOTDIR}
 
-make CC="${CC}" CFLAG="${CFLAGS}" SHARED_LDFLAGS="${LDFLAGS}"
+make CC="${CC}" CFLAG="${CFLAGS}" SHARED_LDFLAGS="${LDFLAGS}" VERBOSE=1
 make install
 popd
 

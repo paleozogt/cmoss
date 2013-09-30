@@ -199,11 +199,11 @@ scrunchAllLibsTogetherInOneLib()
         fi    
 
         echo Decomposing $a...
-        (cd $OBJDIR; ${DEV_DIR}/ar -x $a );
+        (cd $OBJDIR; ${AR} -x $a );
     done;
 
     echo creating $ROOTDIR/lib/libboost.a
-    (cd $OBJDIR; ${DEV_DIR}/ar crus $ROOTDIR/lib/libboost.a *.o; )
+    (cd $OBJDIR; ${AR} crus $ROOTDIR/lib/libboost.a *.o; )
 }
 
 #===============================================================================
