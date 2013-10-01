@@ -102,7 +102,7 @@ then
     PLATFORMS="iPhoneOS-V7 iPhoneSimulator" # TODO 
     # Correct for some path discrepancies in the iphone 7.0 SDK layout. We could simply build with the new location of GCC/etc, but
     # boost uses the GCC location to infer the location of the platform folder. Instead of modifying boost, we simply symlink gcc to
-    # its old place undeoh yeah, warwick is pretty top of the liner Platforms/
+    # its old place
     platform_bin=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/
     developer_bin=/Applications/Xcode.app/Contents/Developer/usr/bin/
     if [ ! -e ${platform_bin}/gcc ]
