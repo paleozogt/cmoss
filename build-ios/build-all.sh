@@ -108,8 +108,8 @@ then
     if [ ! -e ${platform_bin}/gcc ]
     then
         ln -s $developer_bin/gcc $platform_bin/gcc
-        ln -s $developer_bin/ld $platform_bin/ld
         ln -s $developer_bin/g++ $platform_bin/g++
+        ln -s $developer_bin/ld $platform_bin/ld
     fi
 fi
 
