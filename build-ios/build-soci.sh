@@ -29,7 +29,7 @@ set -e
 # Download source
 if [ ! -e "soci-${SOCI_VERSION}.zip" ]
 then
-  curl $PROXY -O "http://surfnet.dl.sourceforge.net/project/soci/soci/soci-${SOCI_VERSION}/soci-${SOCI_VERSION}.zip"
+  curl $PROXY -L "http://surfnet.dl.sourceforge.net/project/soci/soci/soci-${SOCI_VERSION}/soci-${SOCI_VERSION}.zip" -o soci-${SOCI_VERSION}.zip
 fi
 
 # Extract source

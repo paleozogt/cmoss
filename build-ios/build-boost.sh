@@ -1,5 +1,6 @@
 #!/bin/sh
 set -e
+set -x
 
 # Copyright (c) 2011, Mevan Samaratunga
 # All rights reserved.
@@ -31,7 +32,7 @@ BOOST_SOURCE_NAME=boost_${BOOST_VERSION//./_}
 # Download source
 if [ ! -e "${BOOST_SOURCE_NAME}.tar.gz" ]
 then
-  curl $PROXY -L -O "http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/${BOOST_SOURCE_NAME}.tar.gz/download"
+  curl $PROXY -L "http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/${BOOST_SOURCE_NAME}.tar.gz/download" -o ${BOOST_SOURCE_NAME}.tar.gz
 fi
 
 # Build
