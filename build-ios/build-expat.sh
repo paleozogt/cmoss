@@ -29,7 +29,7 @@ set -e
 # Download source
 if [ ! -e "expat-${EXPAT_VERSION}.tar.gz" ]
 then
-  curl $PROXY -O "http://ncu.dl.sourceforge.net/project/expat/expat/${EXPAT_VERSION}/expat-${EXPAT_VERSION}.tar.gz"
+  curl $PROXY -L "http://sourceforge.net/projects/expat/files/expat/${EXPAT_VERSION}/expat-${EXPAT_VERSION}.tar.gz/download" -o expat-${EXPAT_VERSION}.tar.gz
 fi
 
 # Extract source
