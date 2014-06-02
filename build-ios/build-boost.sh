@@ -1,6 +1,5 @@
 #!/bin/sh
 set -e
-set -x
 
 # Copyright (c) 2011, Mevan Samaratunga
 # All rights reserved.
